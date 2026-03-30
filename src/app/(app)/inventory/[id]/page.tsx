@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { StatusBadge } from '@/components/inventory/status-badge'
 import { ConditionBadge } from '@/components/inventory/condition-badge'
 import { LogConditionForm } from '@/components/inventory/log-condition-form'
+import { QrLabel } from '@/components/inventory/qr-label'
 import { ArrowLeft, MapPin, Tag, Calendar, User } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -93,6 +94,16 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
           </CardContent>
         </Card>
       )}
+
+      {/* QR label */}
+      <Card>
+        <CardHeader className="pb-2 pt-4 px-4">
+          <CardTitle className="text-sm font-semibold text-gray-700">QR Label</CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 pb-4">
+          <QrLabel itemId={id} itemName={item.name} assetTag={item.asset_tag} />
+        </CardContent>
+      </Card>
 
       {/* Log condition */}
       {item.status !== 'retired' && (
