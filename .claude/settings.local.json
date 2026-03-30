@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx:*)",
+      "Bash(printf \"No\\\\nNo\\\\n\")",
+      "Bash(yes \"\")",
+      "Bash(npm install:*)"
+    ]
+  }
+}
