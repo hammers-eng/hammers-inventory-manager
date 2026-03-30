@@ -15,7 +15,7 @@ export default async function EditItemPage({ params }: { params: Promise<{ id: s
 
   const [itemRes, categoriesRes, locationsRes] = await Promise.all([
     (supabase as any).from('equipment_items').select('*').eq('id', id).single(),
-    supabase.from('equipment_categories').select('id, name').order('name'),
+    (supabase as any).from('equipment_categories').select('id, name, custom_fields').order('name'),
     supabase.from('locations').select('id, name').order('name'),
   ])
 

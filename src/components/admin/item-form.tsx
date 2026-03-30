@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createItem, updateItem } from '@/actions/items'
 import { useRouter } from 'next/navigation'
+import type { CustomFieldDef } from '@/lib/supabase/database.types'
 
-interface Category { id: string; name: string }
+interface Category { id: string; name: string; custom_fields?: CustomFieldDef[] }
 interface Location { id: string; name: string }
 
 interface ItemData {
@@ -23,6 +24,7 @@ interface ItemData {
   purchase_cost?: number | null
   expected_life_years?: number | null
   notes?: string | null
+  custom_attributes?: Record<string, string>
 }
 
 interface Props {
@@ -37,6 +39,19 @@ export default function ItemForm({ categories, locations, item }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [categoryId, setCategoryId] = useState(item?.category_id ?? '')
   const [locationId, setLocationId] = useState(item?.home_location_id ?? '')
+  const [customValues, setCustomValues] = useState<Record<string, string>>(item?.custom_attributes ?? {})
+
+  const selectedCategory = useMemo(
+    () => categories.find(c => c.id === categoryId),
+    [categories, categoryId]
+  )
+  const customFields = selectedCategory?.custom_fields ?? []
+
+  function handleCategoryChange(v: string | null) {
+    setCategoryId(v ?? '')
+    // Keep values that match field names in the new category
+    // so switching back preserves data
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -44,6 +59,12 @@ export default function ItemForm({ categories, locations, item }: Props) {
     const formData = new FormData(e.currentTarget)
     formData.set('category_id', categoryId)
     formData.set('home_location_id', locationId)
+
+    // Add custom attributes with "custom_" prefix
+    for (const field of customFields) {
+      const val = customValues[field.name] ?? ''
+      formData.set(`custom_${field.name}`, val)
+    }
 
     startTransition(async () => {
       const result = item?.id
@@ -68,7 +89,7 @@ export default function ItemForm({ categories, locations, item }: Props) {
 
         <div className="space-y-1.5">
           <Label>Category *</Label>
-          <Select value={categoryId} onValueChange={v => setCategoryId(v ?? '')} required>
+          <Select value={categoryId} onValueChange={handleCategoryChange} required>
             <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
             <SelectContent>
               {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -86,6 +107,32 @@ export default function ItemForm({ categories, locations, item }: Props) {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Custom fields for the selected category */}
+        {customFields.map(field => (
+          <div key={field.name} className="space-y-1.5">
+            <Label>{field.name}</Label>
+            {field.type === 'select' && field.options ? (
+              <Select
+                value={customValues[field.name] ?? ''}
+                onValueChange={v => setCustomValues(prev => ({ ...prev, [field.name]: v ?? '' }))}
+              >
+                <SelectTrigger><SelectValue placeholder={`Select ${field.name.toLowerCase()}`} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">—</SelectItem>
+                  {field.options.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                type={field.type === 'number' ? 'number' : 'text'}
+                value={customValues[field.name] ?? ''}
+                onChange={e => setCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                placeholder={field.name}
+              />
+            )}
+          </div>
+        ))}
 
         <div className="space-y-1.5">
           <Label htmlFor="asset_tag">Asset tag</Label>

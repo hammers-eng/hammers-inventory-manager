@@ -2,6 +2,12 @@ export type UserRole = 'admin' | 'coach' | 'equipment_manager'
 export type ItemCondition = 'new' | 'good' | 'fair' | 'poor' | 'replace'
 export type ItemStatus = 'available' | 'on_loan' | 'retired'
 
+export interface CustomFieldDef {
+  name: string
+  type: 'text' | 'number' | 'select'
+  options?: string[] // for select type
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -34,10 +40,11 @@ export interface Database {
           id: string
           name: string
           description: string | null
+          custom_fields: CustomFieldDef[]
           created_at: string
         }
-        Insert: { name: string; description?: string | null }
-        Update: { name?: string; description?: string | null }
+        Insert: { name: string; description?: string | null; custom_fields?: CustomFieldDef[] }
+        Update: { name?: string; description?: string | null; custom_fields?: CustomFieldDef[] }
       }
       locations: {
         Row: {
@@ -63,6 +70,7 @@ export interface Database {
           expected_life_years: number | null
           status: ItemStatus
           notes: string | null
+          custom_attributes: Record<string, string>
           created_at: string
           updated_at: string
         }
@@ -78,6 +86,7 @@ export interface Database {
           expected_life_years?: number | null
           status?: ItemStatus
           notes?: string | null
+          custom_attributes?: Record<string, string>
         }
         Update: {
           category_id?: string
@@ -91,6 +100,7 @@ export interface Database {
           expected_life_years?: number | null
           status?: ItemStatus
           notes?: string | null
+          custom_attributes?: Record<string, string>
           updated_at?: string
         }
       }

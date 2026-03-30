@@ -23,6 +23,9 @@ export function ItemCard({ item }: { item: ItemWithDetails }) {
           <div className="text-sm text-gray-500 mt-0.5 space-x-2">
             {category && <span>{category.name}</span>}
             {item.asset_tag && <span>· {item.asset_tag}</span>}
+            {item.custom_attributes && Object.entries(item.custom_attributes as Record<string, string>).map(([k, v]) => (
+              v ? <span key={k}>· {k}: {v}</span> : null
+            ))}
           </div>
           {item.status === 'on_loan' && holderName && (
             <div className="text-sm text-blue-600 mt-0.5">With {holderName}</div>

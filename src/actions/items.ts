@@ -17,6 +17,14 @@ export async function createItem(formData: FormData) {
   const { error: authError, supabase } = await assertAdmin()
   if (authError || !supabase) return { error: authError }
 
+  // Collect custom attributes from form fields prefixed with "custom_"
+  const customAttributes: Record<string, string> = {}
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('custom_') && typeof value === 'string' && value.trim()) {
+      customAttributes[key.slice(7)] = value.trim()
+    }
+  }
+
   const data = {
     name: (formData.get('name') as string).trim(),
     category_id: formData.get('category_id') as string,
@@ -28,6 +36,7 @@ export async function createItem(formData: FormData) {
     purchase_cost: formData.get('purchase_cost') ? Number(formData.get('purchase_cost')) : null,
     expected_life_years: formData.get('expected_life_years') ? Number(formData.get('expected_life_years')) : null,
     notes: (formData.get('notes') as string)?.trim() || null,
+    custom_attributes: customAttributes,
   }
 
   if (!data.name) return { error: 'Name is required' }
@@ -60,6 +69,13 @@ export async function updateItem(id: string, formData: FormData) {
   const { error: authError, supabase } = await assertAdmin()
   if (authError || !supabase) return { error: authError }
 
+  const customAttributes: Record<string, string> = {}
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('custom_') && typeof value === 'string' && value.trim()) {
+      customAttributes[key.slice(7)] = value.trim()
+    }
+  }
+
   const data = {
     name: (formData.get('name') as string).trim(),
     category_id: formData.get('category_id') as string,
@@ -71,6 +87,7 @@ export async function updateItem(id: string, formData: FormData) {
     purchase_cost: formData.get('purchase_cost') ? Number(formData.get('purchase_cost')) : null,
     expected_life_years: formData.get('expected_life_years') ? Number(formData.get('expected_life_years')) : null,
     notes: (formData.get('notes') as string)?.trim() || null,
+    custom_attributes: customAttributes,
     updated_at: new Date().toISOString(),
   }
 

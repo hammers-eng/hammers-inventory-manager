@@ -66,6 +66,15 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
               </span>
             </div>
           )}
+          {item.custom_attributes && Object.keys(item.custom_attributes).length > 0 && (
+            Object.entries(item.custom_attributes as Record<string, string>).map(([key, value]) => (
+              <div key={key} className="flex items-center gap-2 text-sm">
+                <span className="text-gray-400 w-3.5" />
+                <span className="text-gray-500">{key}</span>
+                <span className="text-gray-900">{value}</span>
+              </div>
+            ))
+          )}
           {item.notes && (
             <div className="text-sm text-gray-500 pt-1 border-t">{item.notes}</div>
           )}

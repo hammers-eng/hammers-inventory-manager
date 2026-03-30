@@ -12,7 +12,7 @@ export default async function NewItemPage() {
   if (profile?.role !== 'admin') redirect('/')
 
   const [categoriesRes, locationsRes] = await Promise.all([
-    supabase.from('equipment_categories').select('id, name').order('name'),
+    (supabase as any).from('equipment_categories').select('id, name, custom_fields').order('name'),
     supabase.from('locations').select('id, name').order('name'),
   ])
 

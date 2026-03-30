@@ -46,6 +46,22 @@ export async function updateCategory(id: string, formData: FormData) {
   return { success: true }
 }
 
+export async function updateCategoryCustomFields(id: string, customFields: Array<{ name: string; type: string; options?: string[] }>) {
+  const { error: authError, supabase } = await assertAdmin()
+  if (authError || !supabase) return { error: authError }
+
+  const { error } = await supabase
+    .from('equipment_categories')
+    .update({ custom_fields: customFields })
+    .eq('id', id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/categories')
+  revalidatePath('/inventory')
+  return { success: true }
+}
+
 export async function deleteCategory(id: string) {
   const { error: authError, supabase } = await assertAdmin()
   if (authError || !supabase) return { error: authError }

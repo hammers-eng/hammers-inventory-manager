@@ -7,7 +7,7 @@ export async function getItems() {
     supabase
       .from('equipment_items')
       .select(`
-        id, name, asset_tag, status, notes, purchase_date, expected_life_years,
+        id, name, asset_tag, status, notes, purchase_date, expected_life_years, custom_attributes,
         equipment_categories(id, name),
         locations(id, name)
       `)
@@ -31,6 +31,7 @@ export async function getItems() {
     notes: string | null
     purchase_date: string | null
     expected_life_years: number | null
+    custom_attributes: Record<string, string>
     equipment_categories: { id: string; name: string } | null
     locations: { id: string; name: string } | null
   }>
