@@ -114,6 +114,14 @@ export default function ItemForm({ categories, locations, item }: Props) {
             defaultValue={item?.expected_life_years ?? ''} placeholder="e.g. 3" />
         </div>
 
+        {!item?.id && (
+          <div className="space-y-1.5">
+            <Label htmlFor="quantity">Quantity</Label>
+            <Input id="quantity" name="quantity" type="number" min="1" max="100" defaultValue="1" placeholder="1" />
+            <p className="text-xs text-gray-400">Creates multiple items numbered #1, #2, etc.</p>
+          </div>
+        )}
+
         <div className="sm:col-span-2 space-y-1.5">
           <Label htmlFor="notes">Notes</Label>
           <Input id="notes" name="notes" defaultValue={item?.notes ?? ''} placeholder="Any additional notes..." />

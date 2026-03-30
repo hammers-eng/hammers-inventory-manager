@@ -33,8 +33,23 @@ export async function createItem(formData: FormData) {
   if (!data.name) return { error: 'Name is required' }
   if (!data.category_id) return { error: 'Category is required' }
 
-  const { error } = await supabase.from('equipment_items').insert(data)
-  if (error) return { error: error.message }
+  const quantity = Math.max(1, Math.min(100, Number(formData.get('quantity')) || 1))
+
+  if (quantity === 1) {
+    const { error } = await supabase.from('equipment_items').insert(data)
+    if (error) return { error: error.message }
+  } else {
+    const items = Array.from({ length: quantity }, (_, i) => {
+      const num = i + 1
+      return {
+        ...data,
+        name: `${data.name} #${num}`,
+        asset_tag: data.asset_tag ? `${data.asset_tag}-${String(num).padStart(2, '0')}` : null,
+      }
+    })
+    const { error } = await supabase.from('equipment_items').insert(items)
+    if (error) return { error: error.message }
+  }
 
   revalidatePath('/inventory')
   revalidatePath('/admin/items')
