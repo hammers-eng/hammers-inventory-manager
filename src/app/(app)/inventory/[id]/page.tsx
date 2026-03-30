@@ -1,9 +1,11 @@
+import { createClient } from '@/lib/supabase/server'
 import { getItemById } from '@/lib/queries/items'
 import { notFound } from 'next/navigation'
 import { StatusBadge } from '@/components/inventory/status-badge'
 import { ConditionBadge } from '@/components/inventory/condition-badge'
 import { LogConditionForm } from '@/components/inventory/log-condition-form'
 import { QrLabel } from '@/components/inventory/qr-label'
+import RetireButton from '@/app/(app)/admin/items/[id]/retire-button'
 import { ArrowLeft, MapPin, Tag, Calendar, User } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +14,13 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params
   const item = await getItemById(id)
   if (!item) notFound()
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await (supabase as any).from('profiles').select('role').eq('id', user.id).single()
+    : { data: null }
+  const isAdmin = profile?.role === 'admin'
 
   const category = item.equipment_categories as { name: string } | null
   const location = item.locations as { name: string } | null
@@ -165,6 +174,13 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
               )
             })}
           </div>
+        </div>
+      )}
+
+      {/* Retire */}
+      {isAdmin && item.status !== 'retired' && (
+        <div className="border-t pt-4">
+          <RetireButton itemId={id} itemName={item.name} redirectTo="/inventory" />
         </div>
       )}
     </div>
