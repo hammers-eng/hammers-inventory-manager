@@ -1,0 +1,120 @@
+'use client'
+
+import { useState, useMemo } from 'react'
+import { Input } from '@/components/ui/input'
+import { ItemCard } from '@/components/inventory/item-card'
+import { ItemWithDetails } from '@/lib/queries/items'
+import { Search } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+interface Props {
+  items: ItemWithDetails[]
+  categories: { id: string; name: string }[]
+}
+
+const statusFilters = [
+  { value: 'all',       label: 'All' },
+  { value: 'available', label: 'Available' },
+  { value: 'on_loan',   label: 'On Loan' },
+]
+
+export default function InventoryClient({ items, categories }: Props) {
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('all')
+  const [category, setCategory] = useState('all')
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase()
+    return items.filter(item => {
+      if (status !== 'all' && item.status !== status) return false
+      if (category !== 'all') {
+        const cat = item.equipment_categories as { id: string } | null
+        if (cat?.id !== category) return false
+      }
+      if (q) {
+        const name = item.name.toLowerCase()
+        const tag = (item.asset_tag ?? '').toLowerCase()
+        if (!name.includes(q) && !tag.includes(q)) return false
+      }
+      return true
+    })
+  }, [items, search, status, category])
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-xl font-bold text-gray-900">Inventory</h1>
+        <p className="text-sm text-gray-500">{items.length} items</p>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Input
+          placeholder="Search by name or asset tag..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      {/* Status filter pills */}
+      <div className="flex gap-2 flex-wrap">
+        {statusFilters.map(f => (
+          <button
+            key={f.value}
+            onClick={() => setStatus(f.value)}
+            className={cn(
+              'px-3 py-1 rounded-full text-sm border transition-colors',
+              status === f.value
+                ? 'bg-red-700 text-white border-red-700'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Category filter */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setCategory('all')}
+          className={cn(
+            'px-3 py-1 rounded-full text-xs border transition-colors',
+            category === 'all'
+              ? 'bg-gray-800 text-white border-gray-800'
+              : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+          )}
+        >
+          All categories
+        </button>
+        {categories.map(c => (
+          <button
+            key={c.id}
+            onClick={() => setCategory(c.id)}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs border transition-colors',
+              category === c.id
+                ? 'bg-gray-800 text-white border-gray-800'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+            )}
+          >
+            {c.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Results */}
+      <div className="space-y-2">
+        {filtered.length === 0 ? (
+          <div className="text-sm text-gray-400 text-center py-12">
+            {search || status !== 'all' || category !== 'all' ? 'No items match your filters' : 'No items yet'}
+          </div>
+        ) : (
+          filtered.map(item => <ItemCard key={item.id} item={item} />)
+        )}
+      </div>
+    </div>
+  )
+}
