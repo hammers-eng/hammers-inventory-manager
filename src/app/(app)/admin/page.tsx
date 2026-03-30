@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Users, ArrowRight } from 'lucide-react'
+import { Package, Users, ArrowRight, BarChart2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 export default async function AdminPage() {
@@ -35,6 +35,14 @@ export default async function AdminPage() {
       count: playersRes.count ?? 0,
       countLabel: 'active players',
     },
+    {
+      href: '/admin/reports',
+      icon: BarChart2,
+      label: 'Replacement Planning',
+      description: 'Items needing replacement or past end of life',
+      count: null,
+      countLabel: '',
+    },
   ]
 
   return (
@@ -54,7 +62,7 @@ export default async function AdminPage() {
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">{label}</div>
                   <div className="text-sm text-gray-500">{description}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{count} {countLabel}</div>
+                  {count !== null && <div className="text-xs text-gray-400 mt-0.5">{count} {countLabel}</div>}
                 </div>
                 <ArrowRight size={16} className="text-gray-300" />
               </CardContent>

@@ -2,6 +2,7 @@ import { getItemById } from '@/lib/queries/items'
 import { notFound } from 'next/navigation'
 import { StatusBadge } from '@/components/inventory/status-badge'
 import { ConditionBadge } from '@/components/inventory/condition-badge'
+import { LogConditionForm } from '@/components/inventory/log-condition-form'
 import { ArrowLeft, MapPin, Tag, Calendar, User } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -94,6 +95,11 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Log condition */}
+      {item.status !== 'retired' && (
+        <LogConditionForm itemId={id} />
       )}
 
       {/* Condition history */}

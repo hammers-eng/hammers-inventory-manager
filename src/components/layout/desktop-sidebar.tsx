@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Package, LogOut, LogIn, Settings } from 'lucide-react'
+import { Home, Package, LogOut, LogIn, Settings, BarChart2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Database } from '@/lib/supabase/database.types'
 
@@ -16,7 +16,8 @@ const navItems = [
 ]
 
 const adminItems = [
-  { href: '/admin', label: 'Admin', icon: Settings },
+  { href: '/admin',         label: 'Admin',    icon: Settings },
+  { href: '/admin/reports', label: 'Reports',  icon: BarChart2 },
 ]
 
 export function DesktopSidebar({ profile }: { profile: Profile }) {

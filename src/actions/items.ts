@@ -124,3 +124,29 @@ export async function updatePlayer(id: string, formData: FormData) {
   revalidatePath('/admin/players')
   return { success: true }
 }
+
+export async function logCondition(formData: FormData) {
+  const supabaseTyped = await createClient()
+  const supabase = supabaseTyped as any
+  const { data: { user } } = await supabaseTyped.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const itemId = formData.get('item_id') as string
+  const condition = formData.get('condition') as string
+  const notes = (formData.get('notes') as string)?.trim() || null
+
+  if (!itemId || !condition) return { error: 'Item and condition are required' }
+
+  const { error } = await supabase.from('condition_logs').insert({
+    item_id: itemId,
+    assessed_by: user.id,
+    condition,
+    notes,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/inventory/${itemId}`)
+  revalidatePath('/admin/reports')
+  return { success: true }
+}
