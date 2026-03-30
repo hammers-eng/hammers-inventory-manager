@@ -54,7 +54,7 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="gap-2 cursor-pointer" onSelect={() => router.push('/profile')}>
+        <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/profile')}>
           <User size={14} />
           Profile
         </DropdownMenuItem>
@@ -65,7 +65,7 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-red-600 gap-2 cursor-pointer"
-          onSelect={() => signOut()}
+          onClick={() => signOut()}
         >
           <LogOut size={14} />
           Sign out
