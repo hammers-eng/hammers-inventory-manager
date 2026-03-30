@@ -34,17 +34,17 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+    <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6 space-y-4">
       <Button
         onClick={signInWithGoogle}
         disabled={loading}
-        className="w-full"
+        className="w-full bg-gold-500 text-gray-900 hover:bg-gold-400"
         size="lg"
       >
         {loading ? (
           'Redirecting...'
         ) : (
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-2 font-semibold">
             <GoogleIcon />
             Sign in with Google
           </span>
@@ -52,7 +52,7 @@ export default function LoginForm() {
       </Button>
 
       {error && (
-        <p className="text-sm text-red-600 text-center">{error}</p>
+        <p className="text-sm text-red-400 text-center">{error}</p>
       )}
     </div>
   )

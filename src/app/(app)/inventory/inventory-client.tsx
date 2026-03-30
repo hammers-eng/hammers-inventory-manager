@@ -67,7 +67,7 @@ export default function InventoryClient({ items, categories }: Props) {
             className={cn(
               'px-3 py-1 rounded-full text-sm border transition-colors',
               status === f.value
-                ? 'bg-red-700 text-white border-red-700'
+                ? 'bg-gray-900 text-gold-400 border-gray-900'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
             )}
           >

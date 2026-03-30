@@ -34,7 +34,7 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg hover:bg-gray-100 p-1.5 w-full text-left cursor-pointer bg-transparent border-0">
           <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={profile.avatar_url ?? undefined} />
-            <AvatarFallback className="text-xs bg-red-700 text-white">{initials}</AvatarFallback>
+            <AvatarFallback className="text-xs bg-gray-900 text-gold-400">{initials}</AvatarFallback>
           </Avatar>
           {!compact && (
             <div className="flex-1 min-w-0">
