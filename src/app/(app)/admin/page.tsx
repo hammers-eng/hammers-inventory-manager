@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Tag, MapPin, ArrowRight, BarChart2 } from 'lucide-react'
+import { Package, Tag, MapPin, ArrowRight, BarChart2, Boxes } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 export default async function AdminPage() {
@@ -13,10 +13,11 @@ export default async function AdminPage() {
     .from('profiles').select('role').eq('id', user.id).single() as { data: { role: string } | null }
   if (profile?.role !== 'admin') redirect('/')
 
-  const [itemsRes, categoriesRes, locationsRes] = await Promise.all([
+  const [itemsRes, categoriesRes, locationsRes, packagesRes] = await Promise.all([
     supabase.from('equipment_items').select('*', { count: 'exact', head: true }).neq('status', 'retired'),
     supabase.from('equipment_categories').select('*', { count: 'exact', head: true }),
     supabase.from('locations').select('*', { count: 'exact', head: true }),
+    (supabase as any).from('equipment_packages').select('*', { count: 'exact', head: true }),
   ])
 
   const sections = [
@@ -27,6 +28,14 @@ export default async function AdminPage() {
       description: 'Add, edit, or retire items',
       count: itemsRes.count ?? 0,
       countLabel: 'active items',
+    },
+    {
+      href: '/admin/packages',
+      icon: Boxes,
+      label: 'Packages',
+      description: 'Group equipment for seasonal loans',
+      count: packagesRes.count ?? 0,
+      countLabel: 'packages',
     },
     {
       href: '/admin/categories',

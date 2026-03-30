@@ -177,6 +177,43 @@ export interface Database {
           photo_url?: string | null
         }
       }
+      equipment_packages: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          season: string | null
+          assigned_to: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          name: string
+          description?: string | null
+          season?: string | null
+          assigned_to?: string | null
+        }
+        Update: {
+          name?: string
+          description?: string | null
+          season?: string | null
+          assigned_to?: string | null
+          updated_at?: string
+        }
+      }
+      package_items: {
+        Row: {
+          id: string
+          package_id: string
+          item_id: string
+          added_at: string
+        }
+        Insert: {
+          package_id: string
+          item_id: string
+        }
+        Update: {}
+      }
     }
     Views: {}
     Functions: {
