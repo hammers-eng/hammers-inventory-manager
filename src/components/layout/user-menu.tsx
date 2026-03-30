@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -46,10 +47,12 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
           )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuLabel>
-          <div className="font-medium">{profile.full_name}</div>
-          <div className="text-xs text-gray-500 font-normal">{profile.email}</div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <div className="font-medium">{profile.full_name}</div>
+            <div className="text-xs text-gray-500 font-normal">{profile.email}</div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="gap-2 cursor-pointer" onSelect={() => router.push('/profile')}>
           <User size={14} />
