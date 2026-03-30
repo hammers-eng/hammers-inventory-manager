@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { signOut } from '@/actions/auth'
 import { Database } from '@/lib/supabase/database.types'
-import { LogOut, Shield } from 'lucide-react'
+import { LogOut, Shield, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -22,6 +23,7 @@ const roleLabel: Record<string, string> = {
 }
 
 export function UserMenu({ profile, compact = false }: { profile: Profile; compact?: boolean }) {
+  const router = useRouter()
   const initials = profile.full_name
     .split(' ')
     .map(n => n[0])
@@ -49,6 +51,10 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
           <div className="text-xs text-gray-500 font-normal">{profile.email}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem className="gap-2 cursor-pointer" onSelect={() => router.push('/profile')}>
+          <User size={14} />
+          Profile
+        </DropdownMenuItem>
         <DropdownMenuItem disabled className="text-xs text-gray-400 gap-2">
           <Shield size={14} />
           {roleLabel[profile.role] ?? profile.role}
