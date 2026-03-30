@@ -15,7 +15,7 @@
   --color-gold-600: #a88520;
   --color-gold-700: #86691a;
   --color-gold-800: #6b5415;
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
