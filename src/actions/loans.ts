@@ -10,13 +10,12 @@ export async function checkOutItem(formData: FormData) {
   if (!user) return { error: 'Not authenticated' }
 
   const itemId = formData.get('item_id') as string
-  const playerId = formData.get('player_id') as string | null
-  const recipientName = formData.get('recipient_name') as string | null
+  const recipientName = (formData.get('recipient_name') as string)?.trim()
   const expectedReturnDate = formData.get('expected_return_date') as string | null
   const purpose = formData.get('purpose') as string | null
 
   if (!itemId) return { error: 'Item is required' }
-  if (!playerId && !recipientName?.trim()) return { error: 'Recipient is required' }
+  if (!recipientName) return { error: 'Recipient is required' }
 
   // Verify item is available
   const { data: item } = await supabase
@@ -30,8 +29,7 @@ export async function checkOutItem(formData: FormData) {
 
   const { error } = await supabase.from('equipment_loans').insert({
     item_id: itemId,
-    player_id: playerId || null,
-    recipient_name: !playerId ? recipientName?.trim() : null,
+    recipient_name: recipientName,
     checked_out_by: user.id,
     expected_return_date: expectedReturnDate || null,
     purpose: purpose?.trim() || null,

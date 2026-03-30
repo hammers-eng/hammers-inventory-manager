@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Users, ArrowRight, BarChart2 } from 'lucide-react'
+import { Package, Tag, MapPin, ArrowRight, BarChart2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 export default async function AdminPage() {
@@ -13,9 +13,10 @@ export default async function AdminPage() {
     .from('profiles').select('role').eq('id', user.id).single() as { data: { role: string } | null }
   if (profile?.role !== 'admin') redirect('/')
 
-  const [itemsRes, playersRes] = await Promise.all([
-    supabase.from('equipment_items').select('*', { count: 'exact', head: true }),
-    supabase.from('players').select('*', { count: 'exact', head: true }).eq('is_active', true),
+  const [itemsRes, categoriesRes, locationsRes] = await Promise.all([
+    supabase.from('equipment_items').select('*', { count: 'exact', head: true }).neq('status', 'retired'),
+    supabase.from('equipment_categories').select('*', { count: 'exact', head: true }),
+    supabase.from('locations').select('*', { count: 'exact', head: true }),
   ])
 
   const sections = [
@@ -25,15 +26,23 @@ export default async function AdminPage() {
       label: 'Equipment Items',
       description: 'Add, edit, or retire items',
       count: itemsRes.count ?? 0,
-      countLabel: 'items',
+      countLabel: 'active items',
     },
     {
-      href: '/admin/players',
-      icon: Users,
-      label: 'Players',
-      description: 'Manage squad members',
-      count: playersRes.count ?? 0,
-      countLabel: 'active players',
+      href: '/admin/categories',
+      icon: Tag,
+      label: 'Categories',
+      description: 'Manage equipment categories',
+      count: categoriesRes.count ?? 0,
+      countLabel: 'categories',
+    },
+    {
+      href: '/admin/locations',
+      icon: MapPin,
+      label: 'Locations',
+      description: 'Manage storage locations',
+      count: locationsRes.count ?? 0,
+      countLabel: 'locations',
     },
     {
       href: '/admin/reports',
@@ -49,7 +58,7 @@ export default async function AdminPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-gray-900">Admin</h1>
-        <p className="text-sm text-gray-500">Manage club equipment and members</p>
+        <p className="text-sm text-gray-500">Manage club equipment</p>
       </div>
       <div className="space-y-3">
         {sections.map(({ href, icon: Icon, label, description, count, countLabel }) => (

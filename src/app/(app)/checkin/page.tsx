@@ -8,8 +8,7 @@ export default async function CheckInPage() {
     .from('equipment_loans')
     .select(`
       id, checked_out_at, expected_return_date, purpose, recipient_name,
-      equipment_items(id, name, asset_tag),
-      players(full_name, jersey_number)
+      equipment_items(id, name, asset_tag)
     `)
     .is('checked_in_at', null)
     .order('checked_out_at', { ascending: true })

@@ -25,7 +25,6 @@ interface Loan {
   purpose: string | null
   recipient_name: string | null
   equipment_items: { id: string; name: string; asset_tag: string | null } | null
-  players: { full_name: string; jersey_number: number | null } | null
 }
 
 export default function CheckInForm({ openLoans }: { openLoans: Loan[] }) {
@@ -48,15 +47,13 @@ export default function CheckInForm({ openLoans }: { openLoans: Loan[] }) {
     return openLoans.filter(l => {
       const itemName = l.equipment_items?.name.toLowerCase() ?? ''
       const tag = (l.equipment_items?.asset_tag ?? '').toLowerCase()
-      const person = (l.players?.full_name ?? l.recipient_name ?? '').toLowerCase()
+      const person = (l.recipient_name ?? '').toLowerCase()
       return itemName.includes(q) || tag.includes(q) || person.includes(q)
     })
   }, [openLoans, search])
 
   function getLoanLabel(loan: Loan) {
-    const name = loan.players?.full_name ?? loan.recipient_name ?? 'Unknown'
-    const num = loan.players?.jersey_number ? ` #${loan.players.jersey_number}` : ''
-    return `${name}${num}`
+    return loan.recipient_name ?? 'Unknown'
   }
 
   function isOverdue(loan: Loan) {

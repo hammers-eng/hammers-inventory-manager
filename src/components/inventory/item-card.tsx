@@ -9,10 +9,7 @@ export function ItemCard({ item }: { item: ItemWithDetails }) {
   const category = item.equipment_categories as { name: string } | null
   const location = item.locations as { name: string } | null
 
-  const holderName =
-    (item.currentLoan?.players as { full_name: string } | null)?.full_name ??
-    item.currentLoan?.recipient_name ??
-    null
+  const holderName = item.currentLoan?.recipient_name ?? null
 
   return (
     <Link href={`/inventory/${item.id}`}>

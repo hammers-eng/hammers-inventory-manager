@@ -16,10 +16,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   const location = item.locations as { name: string } | null
 
   const currentLoan = item.currentLoan as any
-  const holderName =
-    currentLoan?.players?.full_name ??
-    currentLoan?.recipient_name ??
-    null
+  const holderName = currentLoan?.recipient_name ?? null
 
   return (
     <div className="space-y-5">
@@ -128,8 +125,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
           <h2 className="text-sm font-semibold text-gray-700 mb-2">Loan History</h2>
           <div className="space-y-2">
             {item.loans.map((loan: any) => {
-              const player = loan.players as { full_name: string; jersey_number: number | null } | null
-              const name = player?.full_name ?? loan.recipient_name ?? 'Unknown'
+              const name = loan.recipient_name ?? 'Unknown'
               return (
                 <div key={loan.id} className="bg-white rounded-lg border p-3">
                   <div className="flex justify-between items-start gap-2">

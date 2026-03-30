@@ -6,8 +6,13 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { checkOutItem } from '@/actions/loans'
 import { Search, Package, User, X, CheckCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+
+const ROLE_LABEL: Record<string, string> = {
+  admin: 'Admin',
+  coach: 'Coach',
+  equipment_manager: 'Equipment Manager',
+}
 
 interface Item {
   id: string
@@ -16,29 +21,28 @@ interface Item {
   equipment_categories: { name: string } | null
 }
 
-interface Player {
+interface Coach {
   id: string
   full_name: string
-  jersey_number: number | null
-  position: string | null
+  role: string
 }
 
 interface Props {
   availableItems: Item[]
-  players: Player[]
+  coaches: Coach[]
 }
 
-export default function CheckOutForm({ availableItems, players }: Props) {
+export default function CheckOutForm({ availableItems, coaches }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   const [itemSearch, setItemSearch] = useState('')
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
 
-  const [playerSearch, setPlayerSearch] = useState('')
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
-  const [useManualName, setUseManualName] = useState(false)
+  const [coachSearch, setCoachSearch] = useState('')
+  const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null)
   const [manualName, setManualName] = useState('')
+  const [useManualName, setUseManualName] = useState(false)
 
   const [returnDate, setReturnDate] = useState('')
   const [purpose, setPurpose] = useState('')
@@ -53,25 +57,22 @@ export default function CheckOutForm({ availableItems, players }: Props) {
     ).slice(0, 10)
   }, [availableItems, itemSearch])
 
-  const filteredPlayers = useMemo(() => {
-    const q = playerSearch.toLowerCase()
-    if (!q) return players.slice(0, 8)
-    return players.filter(
-      p => p.full_name.toLowerCase().includes(q) ||
-        (p.jersey_number?.toString() ?? '').includes(q)
-    ).slice(0, 8)
-  }, [players, playerSearch])
+  const filteredCoaches = useMemo(() => {
+    const q = coachSearch.toLowerCase()
+    if (!q) return coaches
+    return coaches.filter(c => c.full_name.toLowerCase().includes(q))
+  }, [coaches, coachSearch])
 
-  const canSubmit = selectedItem && (selectedPlayer || (useManualName && manualName.trim()))
+  const recipientName = selectedCoach?.full_name ?? (useManualName ? manualName.trim() : '')
+  const canSubmit = !!selectedItem && !!recipientName
 
   async function handleSubmit() {
     if (!canSubmit) return
     setError(null)
 
     const formData = new FormData()
-    formData.set('item_id', selectedItem.id)
-    if (selectedPlayer) formData.set('player_id', selectedPlayer.id)
-    if (useManualName) formData.set('recipient_name', manualName.trim())
+    formData.set('item_id', selectedItem!.id)
+    formData.set('recipient_name', recipientName)
     if (returnDate) formData.set('expected_return_date', returnDate)
     if (purpose) formData.set('purpose', purpose)
 
@@ -92,7 +93,7 @@ export default function CheckOutForm({ availableItems, players }: Props) {
         <CheckCircle size={48} className="text-green-500" />
         <div className="text-lg font-semibold text-gray-900">Checked out!</div>
         <div className="text-sm text-gray-500">
-          {selectedItem?.name} → {selectedPlayer?.full_name ?? manualName}
+          {selectedItem?.name} → {recipientName}
         </div>
       </div>
     )
@@ -109,7 +110,7 @@ export default function CheckOutForm({ availableItems, players }: Props) {
             <div className="flex-1 min-w-0">
               <div className="font-medium text-gray-900">{selectedItem.name}</div>
               <div className="text-xs text-gray-500">
-                {(selectedItem.equipment_categories as any)?.name}
+                {selectedItem.equipment_categories?.name}
                 {selectedItem.asset_tag && ` · ${selectedItem.asset_tag}`}
               </div>
             </div>
@@ -141,7 +142,7 @@ export default function CheckOutForm({ availableItems, players }: Props) {
                   >
                     <div className="text-sm font-medium text-gray-900">{item.name}</div>
                     <div className="text-xs text-gray-500">
-                      {(item.equipment_categories as any)?.name}
+                      {item.equipment_categories?.name}
                       {item.asset_tag && ` · ${item.asset_tag}`}
                     </div>
                   </button>
@@ -155,12 +156,12 @@ export default function CheckOutForm({ availableItems, players }: Props) {
       {/* Step 2: Recipient */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold">2. Who is taking it?</Label>
+          <Label className="text-sm font-semibold">2. Assign to</Label>
           <button
-            onClick={() => { setUseManualName(!useManualName); setSelectedPlayer(null); setPlayerSearch('') }}
+            onClick={() => { setUseManualName(!useManualName); setSelectedCoach(null); setCoachSearch('') }}
             className="text-xs text-blue-600 hover:underline"
           >
-            {useManualName ? 'Search players' : 'Enter name manually'}
+            {useManualName ? 'Select from list' : 'Enter name manually'}
           </button>
         </div>
 
@@ -170,19 +171,14 @@ export default function CheckOutForm({ availableItems, players }: Props) {
             value={manualName}
             onChange={e => setManualName(e.target.value)}
           />
-        ) : selectedPlayer ? (
+        ) : selectedCoach ? (
           <div className="flex items-center gap-3 bg-white border rounded-lg p-3">
             <User size={18} className="text-gray-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-gray-900">{selectedPlayer.full_name}</div>
-              <div className="text-xs text-gray-500">
-                {[
-                  selectedPlayer.jersey_number && `#${selectedPlayer.jersey_number}`,
-                  selectedPlayer.position,
-                ].filter(Boolean).join(' · ')}
-              </div>
+              <div className="font-medium text-gray-900">{selectedCoach.full_name}</div>
+              <div className="text-xs text-gray-500">{ROLE_LABEL[selectedCoach.role] ?? selectedCoach.role}</div>
             </div>
-            <button onClick={() => { setSelectedPlayer(null); setPlayerSearch('') }}>
+            <button onClick={() => { setSelectedCoach(null); setCoachSearch('') }}>
               <X size={16} className="text-gray-400 hover:text-gray-600" />
             </button>
           </div>
@@ -191,38 +187,25 @@ export default function CheckOutForm({ availableItems, players }: Props) {
             <div className="relative">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
-                placeholder="Search players..."
-                value={playerSearch}
-                onChange={e => setPlayerSearch(e.target.value)}
+                placeholder="Search coaches..."
+                value={coachSearch}
+                onChange={e => setCoachSearch(e.target.value)}
                 className="pl-9"
                 autoComplete="off"
               />
             </div>
-            {players.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-3">
-                No players yet.{' '}
-                <a href="/admin/players" className="text-blue-600 hover:underline">Add players</a>
-                {' '}or enter a name manually.
-              </p>
-            ) : (
-              <div className="border rounded-lg divide-y bg-white max-h-48 overflow-y-auto">
-                {filteredPlayers.map(player => (
-                  <button
-                    key={player.id}
-                    onClick={() => { setSelectedPlayer(player); setPlayerSearch('') }}
-                    className="w-full text-left px-3 py-2.5 hover:bg-gray-50 active:bg-gray-100"
-                  >
-                    <div className="text-sm font-medium text-gray-900">{player.full_name}</div>
-                    <div className="text-xs text-gray-500">
-                      {[
-                        player.jersey_number && `#${player.jersey_number}`,
-                        player.position,
-                      ].filter(Boolean).join(' · ')}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="border rounded-lg divide-y bg-white max-h-48 overflow-y-auto">
+              {filteredCoaches.map(coach => (
+                <button
+                  key={coach.id}
+                  onClick={() => { setSelectedCoach(coach); setCoachSearch('') }}
+                  className="w-full text-left px-3 py-2.5 hover:bg-gray-50 active:bg-gray-100"
+                >
+                  <div className="text-sm font-medium text-gray-900">{coach.full_name}</div>
+                  <div className="text-xs text-gray-500">{ROLE_LABEL[coach.role] ?? coach.role}</div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

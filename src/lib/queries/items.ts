@@ -15,10 +15,7 @@ export async function getItems() {
       .order('name'),
     supabase
       .from('equipment_loans')
-      .select(`
-        item_id, recipient_name, expected_return_date, checked_out_at,
-        players(full_name)
-      `)
+      .select('item_id, recipient_name, expected_return_date, checked_out_at')
       .is('checked_in_at', null),
     supabase
       .from('condition_logs')
@@ -42,7 +39,6 @@ export async function getItems() {
     recipient_name: string | null
     expected_return_date: string | null
     checked_out_at: string
-    players: { full_name: string } | null
   }>
   const conditions = (conditionsRes.data ?? []) as Array<{
     item_id: string
@@ -87,7 +83,6 @@ export async function getItemById(id: string) {
       .select(`
         id, checked_out_at, checked_in_at, expected_return_date, purpose,
         location_while_out, return_notes, recipient_name,
-        players(full_name, jersey_number),
         profiles!checked_out_by(full_name)
       `)
       .eq('item_id', id)

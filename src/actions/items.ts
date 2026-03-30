@@ -84,46 +84,6 @@ export async function retireItem(id: string) {
   return { success: true }
 }
 
-export async function createPlayer(formData: FormData) {
-  const { error: authError, supabase } = await assertAdmin()
-  if (authError || !supabase) return { error: authError }
-
-  const data = {
-    full_name: (formData.get('full_name') as string).trim(),
-    jersey_number: formData.get('jersey_number') ? Number(formData.get('jersey_number')) : null,
-    position: (formData.get('position') as string)?.trim() || null,
-    email: (formData.get('email') as string)?.trim() || null,
-    phone: (formData.get('phone') as string)?.trim() || null,
-  }
-
-  if (!data.full_name) return { error: 'Name is required' }
-
-  const { error } = await supabase.from('players').insert(data)
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin/players')
-  return { success: true }
-}
-
-export async function updatePlayer(id: string, formData: FormData) {
-  const { error: authError, supabase } = await assertAdmin()
-  if (authError || !supabase) return { error: authError }
-
-  const data = {
-    full_name: (formData.get('full_name') as string).trim(),
-    jersey_number: formData.get('jersey_number') ? Number(formData.get('jersey_number')) : null,
-    position: (formData.get('position') as string)?.trim() || null,
-    email: (formData.get('email') as string)?.trim() || null,
-    phone: (formData.get('phone') as string)?.trim() || null,
-    is_active: formData.get('is_active') === 'true',
-  }
-
-  const { error } = await supabase.from('players').update(data).eq('id', id)
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin/players')
-  return { success: true }
-}
 
 export async function logCondition(formData: FormData) {
   const supabaseTyped = await createClient()
