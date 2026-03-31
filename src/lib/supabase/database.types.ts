@@ -1,6 +1,7 @@
 export type UserRole = 'admin' | 'coach' | 'equipment_manager'
 export type ItemCondition = 'new' | 'good' | 'fair' | 'poor' | 'replace'
 export type ItemStatus = 'available' | 'on_loan' | 'retired'
+export type TransferStatus = 'pending' | 'accepted' | 'rejected'
 
 export interface CustomFieldDef {
   name: string
@@ -224,15 +225,42 @@ export interface Database {
         }
         Update: {}
       }
+      equipment_transfers: {
+        Row: {
+          id: string
+          loan_id: string
+          item_id: string
+          from_profile_id: string
+          to_profile_id: string
+          status: TransferStatus
+          notes: string | null
+          initiated_at: string
+          responded_at: string | null
+          created_at: string
+        }
+        Insert: {
+          loan_id: string
+          item_id: string
+          from_profile_id: string
+          to_profile_id: string
+          notes?: string | null
+        }
+        Update: {
+          status?: TransferStatus
+          responded_at?: string | null
+        }
+      }
     }
     Views: {}
     Functions: {
       is_admin: { Returns: boolean }
+      complete_transfer: { Args: { p_transfer_id: string }; Returns: void }
     }
     Enums: {
       user_role: UserRole
       item_condition: ItemCondition
       item_status: ItemStatus
+      transfer_status: TransferStatus
     }
   }
 }

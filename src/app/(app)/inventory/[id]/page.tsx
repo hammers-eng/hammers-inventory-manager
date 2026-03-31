@@ -6,7 +6,7 @@ import { ConditionBadge } from '@/components/inventory/condition-badge'
 import { LogConditionForm } from '@/components/inventory/log-condition-form'
 import { QrLabel } from '@/components/inventory/qr-label'
 import RetireButton from '@/app/(app)/admin/items/[id]/retire-button'
-import { ArrowLeft, MapPin, Tag, Calendar, User } from 'lucide-react'
+import { ArrowLeft, MapPin, Tag, Calendar, User, ArrowLeftRight } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -18,7 +18,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = user
-    ? await (supabase as any).from('profiles').select('role').eq('id', user.id).single()
+    ? await (supabase as any).from('profiles').select('role, full_name').eq('id', user.id).single()
     : { data: null }
   const isAdmin = profile?.role === 'admin'
 
@@ -27,6 +27,23 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
   const currentLoan = item.currentLoan as any
   const holderName = currentLoan?.recipient_name ?? null
+
+  // Check if current user is the holder of this item
+  const isHolder = currentLoan && user && (
+    currentLoan.checked_out_by === user.id || currentLoan.recipient_name === profile?.full_name
+  )
+
+  // Check if there's already a pending transfer for this loan
+  let hasPendingTransfer = false
+  if (isHolder && currentLoan) {
+    const { data: pendingTransfer } = await (supabase as any)
+      .from('equipment_transfers')
+      .select('id')
+      .eq('loan_id', currentLoan.id)
+      .eq('status', 'pending')
+      .limit(1)
+    hasPendingTransfer = pendingTransfer && pendingTransfer.length > 0
+  }
 
   return (
     <div className="space-y-5">
@@ -108,6 +125,24 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
             )}
             {currentLoan.purpose && (
               <div className="text-sm text-blue-600">{currentLoan.purpose}</div>
+            )}
+            {isHolder && !hasPendingTransfer && (
+              <Link
+                href={`/transfers/new?loan=${currentLoan.id}`}
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded bg-gold-600 text-white hover:bg-gold-700 transition-colors mt-1"
+              >
+                <ArrowLeftRight size={12} />
+                Transfer to another coach
+              </Link>
+            )}
+            {isHolder && hasPendingTransfer && (
+              <Link
+                href="/transfers"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 mt-1"
+              >
+                <ArrowLeftRight size={12} />
+                Transfer pending...
+              </Link>
             )}
           </CardContent>
         </Card>

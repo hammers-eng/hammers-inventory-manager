@@ -2,17 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Package, LogOut, LogIn, Settings, BarChart2, Tag, MapPin, Boxes } from 'lucide-react'
+import { Home, Package, LogOut, LogIn, Settings, BarChart2, Tag, MapPin, Boxes, ArrowLeftRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Database } from '@/lib/supabase/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 const navItems = [
-  { href: '/',          label: 'Dashboard', icon: Home },
-  { href: '/inventory', label: 'Inventory', icon: Package },
-  { href: '/checkout',  label: 'Check Out', icon: LogOut },
-  { href: '/checkin',   label: 'Check In',  icon: LogIn },
+  { href: '/',          label: 'Dashboard',  icon: Home },
+  { href: '/inventory', label: 'Inventory',  icon: Package },
+  { href: '/checkout',  label: 'Check Out',  icon: LogOut },
+  { href: '/checkin',   label: 'Check In',   icon: LogIn },
+  { href: '/transfers', label: 'Transfers',  icon: ArrowLeftRight },
 ]
 
 const adminItems = [
@@ -23,12 +24,13 @@ const adminItems = [
   { href: '/admin/locations',   label: 'Locations',   icon: MapPin },
 ]
 
-export function DesktopSidebar({ profile }: { profile: Profile }) {
+export function DesktopSidebar({ profile, pendingTransferCount = 0 }: { profile: Profile; pendingTransferCount?: number }) {
   const pathname = usePathname()
   const isAdmin = profile.role === 'admin'
 
   const renderLink = ({ href, label, icon: Icon }: typeof navItems[0]) => {
     const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+    const badge = href === '/transfers' && pendingTransferCount > 0 ? pendingTransferCount : null
     return (
       <Link
         key={href}
@@ -42,6 +44,11 @@ export function DesktopSidebar({ profile }: { profile: Profile }) {
       >
         <Icon size={18} strokeWidth={active ? 2.5 : 1.5} />
         {label}
+        {badge && (
+          <span className="ml-auto bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {badge}
+          </span>
+        )}
       </Link>
     )
   }

@@ -19,6 +19,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!profile) redirect('/login')
 
+  // Count pending incoming transfers for badge
+  const { count: pendingTransferCount } = await (supabase as any)
+    .from('equipment_transfers')
+    .select('id', { count: 'exact', head: true })
+    .eq('to_profile_id', user.id)
+    .eq('status', 'pending')
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop sidebar */}
@@ -31,7 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <div className="text-xs text-gold-600">Equipment</div>
             </div>
           </div>
-          <DesktopSidebar profile={profile} />
+          <DesktopSidebar profile={profile} pendingTransferCount={pendingTransferCount ?? 0} />
           <div className="p-4 border-t">
             <UserMenu profile={profile} />
           </div>
@@ -55,7 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </main>
 
       {/* Mobile bottom nav */}
-      <MobileNav />
+      <MobileNav pendingTransferCount={pendingTransferCount ?? 0} />
     </div>
   )
 }
