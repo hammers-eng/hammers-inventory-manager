@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 import { signOut } from '@/actions/auth'
 import { Database } from '@/lib/supabase/database.types'
 import { LogOut, Shield, User, Settings, BarChart2, Boxes, Tag, MapPin } from 'lucide-react'
@@ -34,7 +35,7 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg hover:bg-gray-100 p-1.5 w-full text-left cursor-pointer bg-transparent border-0">
+      <DropdownMenuTrigger className={cn('flex items-center gap-2 rounded-lg hover:bg-gray-100 p-1.5 text-left cursor-pointer bg-transparent border-0', !compact && 'w-full')}>
           <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={profile.avatar_url ?? undefined} />
             <AvatarFallback className="text-xs bg-gray-900 text-gold-400">{initials}</AvatarFallback>
