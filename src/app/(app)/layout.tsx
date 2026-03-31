@@ -11,11 +11,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('id, full_name, email, role, avatar_url')
     .eq('id', user.id)
-    .single()
+    .single() as { data: import('@/lib/supabase/database.types').Database['public']['Tables']['profiles']['Row'] | null }
 
   if (!profile) redirect('/login')
 
@@ -62,7 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </main>
 
       {/* Mobile bottom nav */}
-      <MobileNav pendingTransferCount={pendingTransferCount ?? 0} />
+      <MobileNav pendingTransferCount={pendingTransferCount ?? 0} role={profile.role} />
     </div>
   )
 }

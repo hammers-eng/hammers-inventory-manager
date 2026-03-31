@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { signOut } from '@/actions/auth'
 import { Database } from '@/lib/supabase/database.types'
-import { LogOut, Shield, User } from 'lucide-react'
+import { LogOut, Shield, User, Settings, BarChart2, Boxes, Tag, MapPin } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -62,6 +62,29 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
           <Shield size={14} />
           {roleLabel[profile.role] ?? profile.role}
         </DropdownMenuItem>
+        {profile.role === 'admin' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-gray-400">Admin</DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin')}>
+              <Settings size={14} /> Admin
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/reports')}>
+              <BarChart2 size={14} /> Reports
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/packages')}>
+              <Boxes size={14} /> Packages
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/categories')}>
+              <Tag size={14} /> Categories
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/locations')}>
+              <MapPin size={14} /> Locations
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-red-600 gap-2 cursor-pointer"

@@ -4,21 +4,24 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Package, LogOut, LogIn, ArrowLeftRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { UserRole } from '@/lib/supabase/database.types'
 
-const tabs = [
-  { href: '/',          label: 'Home',      icon: Home },
-  { href: '/inventory', label: 'Inventory', icon: Package },
-  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight },
-  { href: '/checkout',  label: 'Out',       icon: LogOut },
-  { href: '/checkin',   label: 'In',        icon: LogIn },
+const allTabs = [
+  { href: '/',          label: 'Home',      icon: Home,             requiresRole: false },
+  { href: '/inventory', label: 'Inventory', icon: Package,          requiresRole: false },
+  { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight,   requiresRole: false },
+  { href: '/checkout',  label: 'Out',       icon: LogOut,           requiresRole: true },
+  { href: '/checkin',   label: 'In',        icon: LogIn,            requiresRole: true },
 ]
 
-export function MobileNav({ pendingTransferCount = 0 }: { pendingTransferCount?: number }) {
+export function MobileNav({ pendingTransferCount = 0, role }: { pendingTransferCount?: number; role?: UserRole }) {
   const pathname = usePathname()
+  const canManage = role === 'admin' || role === 'equipment_manager'
+  const tabs = allTabs.filter(t => !t.requiresRole || canManage)
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-white border-t safe-area-pb">
-      <div className="grid grid-cols-5 h-16">
+      <div className={cn('grid h-16', canManage ? 'grid-cols-5' : 'grid-cols-3')}>
         {tabs.map(({ href, label, icon: Icon }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
           const badge = href === '/transfers' && pendingTransferCount > 0 ? pendingTransferCount : null

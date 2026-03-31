@@ -9,24 +9,26 @@ import { Database } from '@/lib/supabase/database.types'
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 const navItems = [
-  { href: '/',          label: 'Dashboard',  icon: Home },
-  { href: '/inventory', label: 'Inventory',  icon: Package },
-  { href: '/checkout',  label: 'Check Out',  icon: LogOut },
-  { href: '/checkin',   label: 'Check In',   icon: LogIn },
-  { href: '/transfers', label: 'Transfers',  icon: ArrowLeftRight },
+  { href: '/',          label: 'Dashboard',  icon: Home,             requiresRole: false },
+  { href: '/inventory', label: 'Inventory',  icon: Package,          requiresRole: false },
+  { href: '/checkout',  label: 'Check Out',  icon: LogOut,           requiresRole: true },
+  { href: '/checkin',   label: 'Check In',   icon: LogIn,            requiresRole: true },
+  { href: '/transfers', label: 'Transfers',  icon: ArrowLeftRight,   requiresRole: false },
 ]
 
 const adminItems = [
-  { href: '/admin',             label: 'Admin',       icon: Settings },
-  { href: '/admin/reports',     label: 'Reports',     icon: BarChart2 },
-  { href: '/admin/packages',    label: 'Packages',    icon: Boxes },
-  { href: '/admin/categories',  label: 'Categories',  icon: Tag },
-  { href: '/admin/locations',   label: 'Locations',   icon: MapPin },
+  { href: '/admin',             label: 'Admin',       icon: Settings,  requiresRole: false },
+  { href: '/admin/reports',     label: 'Reports',     icon: BarChart2, requiresRole: false },
+  { href: '/admin/packages',    label: 'Packages',    icon: Boxes,     requiresRole: false },
+  { href: '/admin/categories',  label: 'Categories',  icon: Tag,       requiresRole: false },
+  { href: '/admin/locations',   label: 'Locations',   icon: MapPin,    requiresRole: false },
 ]
 
 export function DesktopSidebar({ profile, pendingTransferCount = 0 }: { profile: Profile; pendingTransferCount?: number }) {
   const pathname = usePathname()
   const isAdmin = profile.role === 'admin'
+  const canManage = profile.role === 'admin' || profile.role === 'equipment_manager'
+  const visibleNavItems = navItems.filter(item => !item.requiresRole || canManage)
 
   const renderLink = ({ href, label, icon: Icon }: typeof navItems[0]) => {
     const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -55,7 +57,7 @@ export function DesktopSidebar({ profile, pendingTransferCount = 0 }: { profile:
 
   return (
     <nav className="flex-1 p-4 space-y-1">
-      {navItems.map(renderLink)}
+      {visibleNavItems.map(renderLink)}
       {isAdmin && (
         <>
           <div className="pt-4 pb-1 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
