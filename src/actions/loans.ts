@@ -94,3 +94,36 @@ export async function checkInItem(formData: FormData) {
   revalidatePath(`/inventory/${loan.item_id}`)
   return { success: true }
 }
+
+export async function bulkCheckIn(loanIds: string[]) {
+  const supabaseTyped = await createClient()
+  const supabase = supabaseTyped as any
+  const { data: { user } } = await supabaseTyped.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  if (!loanIds.length) return { error: 'No items selected' }
+
+  const now = new Date().toISOString()
+  let checked = 0
+  let failed = 0
+
+  for (const loanId of loanIds) {
+    const { error } = await supabase
+      .from('equipment_loans')
+      .update({
+        checked_in_at: now,
+        checked_in_by: user.id,
+        return_notes: 'Bulk check-in',
+      })
+      .eq('id', loanId)
+      .is('checked_in_at', null)
+
+    if (error) failed++
+    else checked++
+  }
+
+  revalidatePath('/')
+  revalidatePath('/inventory')
+  revalidatePath('/checkin')
+  return { success: true, checked, failed }
+}
