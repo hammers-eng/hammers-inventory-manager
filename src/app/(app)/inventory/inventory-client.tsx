@@ -4,12 +4,15 @@ import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { ItemCard } from '@/components/inventory/item-card'
 import { ItemWithDetails } from '@/lib/queries/items'
+import { ExportButton } from '@/components/export-button'
+import { exportInventory } from '@/actions/exports'
 import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
   items: ItemWithDetails[]
   categories: { id: string; name: string }[]
+  locations: { id: string; name: string }[]
 }
 
 const statusFilters = [
@@ -18,10 +21,11 @@ const statusFilters = [
   { value: 'on_loan',   label: 'On Loan' },
 ]
 
-export default function InventoryClient({ items, categories }: Props) {
+export default function InventoryClient({ items, categories, locations }: Props) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
   const [category, setCategory] = useState('all')
+  const [location, setLocation] = useState('all')
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -31,27 +35,37 @@ export default function InventoryClient({ items, categories }: Props) {
         const cat = item.equipment_categories as { id: string } | null
         if (cat?.id !== category) return false
       }
+      if (location !== 'all') {
+        const loc = item.locations as { id: string } | null
+        if (loc?.id !== location) return false
+      }
       if (q) {
         const name = item.name.toLowerCase()
         const tag = (item.asset_tag ?? '').toLowerCase()
-        if (!name.includes(q) && !tag.includes(q)) return false
+        const holder = (item.currentLoan?.recipient_name ?? '').toLowerCase()
+        if (!name.includes(q) && !tag.includes(q) && !holder.includes(q)) return false
       }
       return true
     })
-  }, [items, search, status, category])
+  }, [items, search, status, category, location])
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Inventory</h1>
-        <p className="text-sm text-gray-500">{items.length} items</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Inventory</h1>
+          <p className="text-sm text-gray-500">
+            {filtered.length === items.length ? `${items.length} items` : `${filtered.length} of ${items.length} items`}
+          </p>
+        </div>
+        <ExportButton label="Export CSV" action={exportInventory} />
       </div>
 
       {/* Search */}
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <Input
-          placeholder="Search by name or asset tag..."
+          placeholder="Search by name, asset tag, or holder..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="pl-9"
@@ -104,6 +118,37 @@ export default function InventoryClient({ items, categories }: Props) {
           </button>
         ))}
       </div>
+
+      {/* Location filter */}
+      {locations.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setLocation('all')}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs border transition-colors',
+              location === 'all'
+                ? 'bg-gray-800 text-white border-gray-800'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+            )}
+          >
+            All locations
+          </button>
+          {locations.map(l => (
+            <button
+              key={l.id}
+              onClick={() => setLocation(l.id)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs border transition-colors',
+                location === l.id
+                  ? 'bg-gray-800 text-white border-gray-800'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+              )}
+            >
+              {l.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Results */}
       <div className="space-y-2">

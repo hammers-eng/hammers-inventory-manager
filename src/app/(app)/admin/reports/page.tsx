@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { ConditionBadge } from '@/components/inventory/condition-badge'
 import { ArrowLeft, AlertTriangle, Clock, ThumbsDown } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ExportButton } from '@/components/export-button'
+import { exportInventory, exportLoans, exportConditionReport } from '@/actions/exports'
 
 interface ReportItem {
   id: string
@@ -98,12 +100,19 @@ export default async function ReportsPage() {
         <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-3">
           <ArrowLeft size={14} /> Admin
         </Link>
-        <h1 className="text-xl font-bold text-gray-900">Replacement Planning</h1>
+        <h1 className="text-xl font-bold text-gray-900">Reports</h1>
         <p className="text-sm text-gray-500">
           {totalFlagged === 0
             ? 'All equipment is in good shape'
             : `${totalFlagged} item${totalFlagged !== 1 ? 's' : ''} need attention`}
         </p>
+      </div>
+
+      {/* Export buttons */}
+      <div className="flex gap-2 flex-wrap">
+        <ExportButton label="Inventory CSV" action={exportInventory} />
+        <ExportButton label="Loan History CSV" action={exportLoans} />
+        <ExportButton label="Condition Report CSV" action={exportConditionReport} />
       </div>
 
       {totalFlagged === 0 && (

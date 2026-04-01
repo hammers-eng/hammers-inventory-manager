@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from '@/lib/utils'
 
 export default async function DashboardPage() {
-  const { onLoan, available, total, overdue, recentActivity } = await getDashboardStats()
+  const { onLoan, available, total, overdue, overdueItems, recentActivity } = await getDashboardStats()
 
   const stats = [
     {
@@ -65,6 +65,42 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {/* Overdue items */}
+      {overdueItems.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-red-700 mb-3 flex items-center gap-1.5">
+            <AlertTriangle size={14} />
+            Overdue ({overdue})
+          </h2>
+          <div className="space-y-2">
+            {overdueItems.map((loan: any) => {
+              const item = loan.equipment_items as { id: string; name: string; asset_tag: string | null } | null
+              const daysOverdue = Math.floor(
+                (Date.now() - new Date(loan.expected_return_date).getTime()) / (1000 * 60 * 60 * 24)
+              )
+              return (
+                <Link key={loan.id} href={`/inventory/${item?.id}`}>
+                  <Card className="border-red-200 bg-red-50 hover:border-red-300 transition-colors">
+                    <CardContent className="p-3 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {item?.name ?? 'Unknown'}
+                          {item?.asset_tag && <span className="text-gray-400 font-normal"> · {item.asset_tag}</span>}
+                        </div>
+                        <div className="text-xs text-gray-500">{loan.recipient_name ?? 'Unknown'}</div>
+                      </div>
+                      <span className="text-xs font-semibold text-red-700 whitespace-nowrap bg-red-100 px-2 py-1 rounded-full">
+                        {daysOverdue}d overdue
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Recent activity */}
       <div>

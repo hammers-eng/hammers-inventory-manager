@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 
 export async function getDashboardStats() {
-  const supabase = await createClient()
+  const supabaseTyped = await createClient()
+  const supabase = supabaseTyped as any
   const today = new Date().toISOString().split('T')[0]
 
-  const [onLoanRes, availableRes, overdueRes, recentRes] = await Promise.all([
+  const [onLoanRes, availableRes, overdueCountRes, overdueListRes, recentRes] = await Promise.all([
     supabase
       .from('equipment_items')
       .select('*', { count: 'exact', head: true })
@@ -21,10 +22,20 @@ export async function getDashboardStats() {
     supabase
       .from('equipment_loans')
       .select(`
-        id, checked_out_at, checked_in_at, purpose,
-        equipment_items(name, asset_tag),
+        id, expected_return_date, recipient_name, checked_out_at,
+        equipment_items!equipment_loans_item_id_fkey(id, name, asset_tag)
+      `)
+      .is('checked_in_at', null)
+      .lt('expected_return_date', today)
+      .order('expected_return_date', { ascending: true })
+      .limit(10),
+    supabase
+      .from('equipment_loans')
+      .select(`
+        id, checked_out_at, checked_in_at, purpose, recipient_name,
+        equipment_items!equipment_loans_item_id_fkey(name, asset_tag),
         players(full_name),
-        profiles!checked_out_by(full_name)
+        profiles!equipment_loans_checked_out_by_fkey(full_name)
       `)
       .order('created_at', { ascending: false })
       .limit(8),
@@ -33,8 +44,8 @@ export async function getDashboardStats() {
   const onLoan = onLoanRes.count ?? 0
   const available = availableRes.count ?? 0
   const total = onLoan + available
-  const overdue = overdueRes.count ?? 0
+  const overdue = overdueCountRes.count ?? 0
+  const overdueItems = overdueListRes.data ?? []
   const recentActivity = recentRes.data ?? []
-
-  return { onLoan, available, total, overdue, recentActivity }
+  return { onLoan, available, total, overdue, overdueItems, recentActivity }
 }
