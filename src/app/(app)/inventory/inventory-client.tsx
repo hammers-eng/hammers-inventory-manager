@@ -19,6 +19,8 @@ const statusFilters = [
   { value: 'all',       label: 'All' },
   { value: 'available', label: 'Available' },
   { value: 'on_loan',   label: 'On Loan' },
+  { value: 'lost',      label: 'Lost' },
+  { value: 'damaged',   label: 'Damaged' },
 ]
 
 export default function InventoryClient({ items, categories, locations }: Props) {

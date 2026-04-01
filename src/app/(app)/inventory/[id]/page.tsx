@@ -5,7 +5,7 @@ import { StatusBadge } from '@/components/inventory/status-badge'
 import { ConditionBadge } from '@/components/inventory/condition-badge'
 import { LogConditionForm } from '@/components/inventory/log-condition-form'
 import { QrLabel } from '@/components/inventory/qr-label'
-import RetireButton from '@/app/(app)/admin/items/[id]/retire-button'
+import { RemoveFromService } from '@/components/inventory/remove-from-service'
 import { ArrowLeft, MapPin, Tag, Calendar, User, ArrowLeftRight } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -158,8 +158,20 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         </CardContent>
       </Card>
 
+      {/* Lost/damaged reason */}
+      {(item.status === 'lost' || item.status === 'damaged') && item.removal_reason && (
+        <Card className={item.status === 'lost' ? 'border-red-200 bg-red-50' : 'border-orange-200 bg-orange-50'}>
+          <CardContent className="p-4">
+            <p className={`text-sm font-medium ${item.status === 'lost' ? 'text-red-800' : 'text-orange-800'} mb-1`}>
+              {item.status === 'lost' ? 'Reported Lost' : 'Reported Damaged'}
+            </p>
+            <p className="text-sm text-gray-700">{item.removal_reason}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Log condition */}
-      {item.status !== 'retired' && (
+      {!['retired', 'lost', 'damaged'].includes(item.status) && (
         <LogConditionForm itemId={id} />
       )}
 
@@ -212,10 +224,10 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         </div>
       )}
 
-      {/* Retire */}
-      {isAdmin && item.status !== 'retired' && (
+      {/* Remove from service */}
+      {isAdmin && !['retired', 'lost', 'damaged'].includes(item.status) && (
         <div className="border-t pt-4">
-          <RetireButton itemId={id} itemName={item.name} redirectTo="/inventory" />
+          <RemoveFromService itemId={id} itemName={item.name} />
         </div>
       )}
     </div>

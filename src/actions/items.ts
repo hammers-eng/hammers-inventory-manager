@@ -117,6 +117,51 @@ export async function retireItem(id: string) {
 }
 
 
+export async function markItemLostOrDamaged(id: string, status: 'lost' | 'damaged', reason: string) {
+  const { error: authError, supabase } = await assertAdmin()
+  if (authError || !supabase) return { error: authError }
+
+  if (!reason.trim()) return { error: 'Please describe what happened' }
+
+  // If the item is currently on loan, check it back in first
+  const { data: openLoan } = await supabase
+    .from('equipment_loans')
+    .select('id')
+    .eq('item_id', id)
+    .is('checked_in_at', null)
+    .limit(1)
+    .single()
+
+  if (openLoan) {
+    const { data: { user } } = await (await createClient()).auth.getUser()
+    await supabase
+      .from('equipment_loans')
+      .update({
+        checked_in_at: new Date().toISOString(),
+        checked_in_by: user?.id,
+        return_notes: `Item marked as ${status}: ${reason.trim()}`,
+      })
+      .eq('id', openLoan.id)
+  }
+
+  const { error } = await supabase
+    .from('equipment_items')
+    .update({
+      status,
+      removal_reason: reason.trim(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/inventory')
+  revalidatePath(`/inventory/${id}`)
+  revalidatePath('/admin/items')
+  revalidatePath('/admin/reports')
+  return { success: true }
+}
+
 export async function logCondition(formData: FormData) {
   const supabaseTyped = await createClient()
   const supabase = supabaseTyped as any

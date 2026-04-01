@@ -1,6 +1,6 @@
 export type UserRole = 'admin' | 'coach' | 'equipment_manager'
 export type ItemCondition = 'new' | 'good' | 'fair' | 'poor' | 'replace'
-export type ItemStatus = 'available' | 'on_loan' | 'retired'
+export type ItemStatus = 'available' | 'on_loan' | 'retired' | 'lost' | 'damaged'
 export type TransferStatus = 'pending' | 'accepted' | 'rejected'
 
 export interface CustomFieldDef {
@@ -72,6 +72,7 @@ export interface Database {
           status: ItemStatus
           notes: string | null
           custom_attributes: Record<string, string>
+          removal_reason: string | null
           created_at: string
           updated_at: string
         }
@@ -88,6 +89,7 @@ export interface Database {
           status?: ItemStatus
           notes?: string | null
           custom_attributes?: Record<string, string>
+          removal_reason?: string | null
         }
         Update: {
           category_id?: string
@@ -102,6 +104,7 @@ export interface Database {
           status?: ItemStatus
           notes?: string | null
           custom_attributes?: Record<string, string>
+          removal_reason?: string | null
           updated_at?: string
         }
       }

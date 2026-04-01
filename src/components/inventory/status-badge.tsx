@@ -5,6 +5,8 @@ const config: Record<ItemStatus, { label: string; className: string }> = {
   available: { label: 'Available', className: 'bg-green-100 text-green-800 hover:bg-green-100' },
   on_loan:   { label: 'On Loan',   className: 'bg-blue-100 text-blue-800 hover:bg-blue-100' },
   retired:   { label: 'Retired',   className: 'bg-gray-100 text-gray-600 hover:bg-gray-100' },
+  lost:      { label: 'Lost',      className: 'bg-red-100 text-red-800 hover:bg-red-100' },
+  damaged:   { label: 'Damaged',   className: 'bg-orange-100 text-orange-800 hover:bg-orange-100' },
 }
 
 export function StatusBadge({ status }: { status: ItemStatus }) {
