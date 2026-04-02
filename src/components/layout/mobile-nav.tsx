@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Package, LogOut, LogIn, ArrowLeftRight } from 'lucide-react'
+import { Home, Package, LogOut, LogIn, ArrowLeftRight, ScanLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserRole } from '@/lib/supabase/database.types'
 
 const allTabs = [
   { href: '/',          label: 'Home',      icon: Home,             requiresRole: false },
   { href: '/inventory', label: 'Inventory', icon: Package,          requiresRole: false },
+  { href: '/scan',      label: 'Scan',      icon: ScanLine,         requiresRole: false },
   { href: '/transfers', label: 'Transfers', icon: ArrowLeftRight,   requiresRole: false },
   { href: '/checkout',  label: 'Out',       icon: LogOut,           requiresRole: true },
   { href: '/checkin',   label: 'In',        icon: LogIn,            requiresRole: true },
@@ -21,7 +22,7 @@ export function MobileNav({ pendingTransferCount = 0, role }: { pendingTransferC
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-white border-t safe-area-pb">
-      <div className={cn('grid h-16', canManage ? 'grid-cols-5' : 'grid-cols-3')}>
+      <div className={cn('grid h-16', canManage ? 'grid-cols-6' : 'grid-cols-4')}>
         {tabs.map(({ href, label, icon: Icon }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
           const badge = href === '/transfers' && pendingTransferCount > 0 ? pendingTransferCount : null

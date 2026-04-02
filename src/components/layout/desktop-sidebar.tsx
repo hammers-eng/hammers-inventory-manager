@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Package, LogOut, LogIn, Settings, BarChart2, Tag, MapPin, Boxes, ArrowLeftRight, ClipboardCheck, ClipboardList, FileText } from 'lucide-react'
+import { Home, Package, LogOut, LogIn, Settings, BarChart2, Tag, MapPin, Boxes, ArrowLeftRight, ClipboardCheck, ClipboardList, FileText, ScanLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Database } from '@/lib/supabase/database.types'
 
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/inventory', label: 'Inventory',  icon: Package,          requiresRole: false },
   { href: '/checkout',  label: 'Check Out',  icon: LogOut,           requiresRole: true },
   { href: '/checkin',   label: 'Check In',   icon: LogIn,            requiresRole: true },
+  { href: '/scan',      label: 'Scan QR',    icon: ScanLine,         requiresRole: false },
   { href: '/transfers', label: 'Transfers',  icon: ArrowLeftRight,   requiresRole: false },
 ]
 

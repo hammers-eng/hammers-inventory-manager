@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ConditionBadge } from '@/components/inventory/condition-badge'
-import { ArrowLeft, AlertTriangle, Clock, ThumbsDown } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, Clock, ThumbsDown, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExportButton } from '@/components/export-button'
 import { exportInventory, exportLoans, exportConditionReport } from '@/actions/exports'
@@ -29,12 +29,16 @@ export default async function ReportsPage() {
     .from('profiles').select('role').eq('id', user.id).single() as { data: { role: string } | null }
   if (profile?.role !== 'admin') redirect('/')
 
-  const [itemsRes, conditionsRes] = await Promise.all([
+  const [itemsRes, allItemsRes, conditionsRes] = await Promise.all([
     (supabase as any)
       .from('equipment_items')
       .select('id, name, asset_tag, purchase_date, expected_life_years, purchase_cost, equipment_categories(name)')
       .neq('status', 'retired')
       .order('name') as Promise<{ data: any[] | null }>,
+    (supabase as any)
+      .from('equipment_items')
+      .select('id, purchase_date, purchase_cost, status, equipment_categories(name)')
+      .order('purchase_date') as Promise<{ data: any[] | null }>,
     supabase
       .from('condition_logs')
       .select('item_id, condition, assessed_at')
@@ -42,6 +46,10 @@ export default async function ReportsPage() {
   ])
 
   const items = (itemsRes.data ?? [])
+  const allItems = (allItemsRes.data ?? []) as Array<{
+    id: string; purchase_date: string | null; purchase_cost: number | null;
+    status: string; equipment_categories: { name: string } | null
+  }>
   const conditions = (conditionsRes.data ?? []) as Array<{ item_id: string; condition: string; assessed_at: string }>
 
   // Latest condition per item
@@ -94,6 +102,42 @@ export default async function ReportsPage() {
     ...pastEndOfLife.map(i => i.id),
   ]).size
 
+  // --- Spend tracking ---
+  const totalSpend = allItems.reduce((sum, i) => sum + (i.purchase_cost ?? 0), 0)
+  const activeSpend = allItems
+    .filter(i => !['retired', 'lost', 'damaged'].includes(i.status))
+    .reduce((sum, i) => sum + (i.purchase_cost ?? 0), 0)
+
+  // Spend by category
+  const spendByCategory = new Map<string, { count: number; total: number }>()
+  for (const item of allItems) {
+    if (!item.purchase_cost) continue
+    const cat = item.equipment_categories?.name ?? 'Uncategorised'
+    const entry = spendByCategory.get(cat) ?? { count: 0, total: 0 }
+    entry.count++
+    entry.total += item.purchase_cost
+    spendByCategory.set(cat, entry)
+  }
+  const spendByCategorySorted = Array.from(spendByCategory.entries())
+    .sort((a, b) => b[1].total - a[1].total)
+
+  // Estimated replacement cost (items flagged as poor/replace or past end of life)
+  const flaggedIds = new Set([
+    ...needsReplacement.map(i => i.id),
+    ...poorCondition.map(i => i.id),
+    ...pastEndOfLife.map(i => i.id),
+  ])
+  const replacementCost = enriched
+    .filter(i => flaggedIds.has(i.id) && i.purchase_cost)
+    .reduce((sum, i) => sum + (i.purchase_cost ?? 0), 0)
+
+  // Lost/damaged cost
+  const lostDamagedCost = allItems
+    .filter(i => (i.status === 'lost' || i.status === 'damaged') && i.purchase_cost)
+    .reduce((sum, i) => sum + (i.purchase_cost ?? 0), 0)
+
+  const fmt = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+
   return (
     <div className="space-y-6">
       <div>
@@ -115,6 +159,78 @@ export default async function ReportsPage() {
         <ExportButton label="Condition Report CSV" action={exportConditionReport} />
       </div>
 
+      {/* Spend summary */}
+      {totalSpend > 0 && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <Card>
+              <CardContent className="p-4">
+                <div className="inline-flex p-2 rounded-lg bg-green-50 mb-2">
+                  <DollarSign size={18} className="text-green-600" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900">{fmt(totalSpend)}</div>
+                <div className="text-xs text-gray-500">Total spend ({allItems.filter(i => i.purchase_cost).length} items)</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="inline-flex p-2 rounded-lg bg-blue-50 mb-2">
+                  <DollarSign size={18} className="text-blue-600" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900">{fmt(activeSpend)}</div>
+                <div className="text-xs text-gray-500">Active inventory value</div>
+              </CardContent>
+            </Card>
+            {replacementCost > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="inline-flex p-2 rounded-lg bg-amber-50 mb-2">
+                    <AlertTriangle size={18} className="text-amber-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{fmt(replacementCost)}</div>
+                  <div className="text-xs text-gray-500">Est. replacement cost</div>
+                </CardContent>
+              </Card>
+            )}
+            {lostDamagedCost > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="inline-flex p-2 rounded-lg bg-red-50 mb-2">
+                    <DollarSign size={18} className="text-red-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{fmt(lostDamagedCost)}</div>
+                  <div className="text-xs text-gray-500">Lost / damaged value</div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Spend by category */}
+          <Card>
+            <CardHeader className="pb-2 pt-4 px-4">
+              <CardTitle className="text-sm font-semibold text-gray-700">Spend by Category</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 space-y-2">
+              {spendByCategorySorted.map(([cat, { count, total }]) => {
+                const pct = Math.round((total / totalSpend) * 100)
+                return (
+                  <div key={cat}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-gray-700">{cat} <span className="text-gray-400">({count})</span></span>
+                      <span className="font-medium text-gray-900">{fmt(total)}</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-gold-500 rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Replacement planning */}
       {totalFlagged === 0 && (
         <div className="text-center py-16 text-gray-400">
           <div className="text-4xl mb-3">✓</div>
