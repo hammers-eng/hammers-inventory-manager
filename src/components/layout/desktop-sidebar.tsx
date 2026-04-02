@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Package, LogOut, LogIn, Settings, BarChart2, Tag, MapPin, Boxes, ArrowLeftRight, ClipboardCheck, ClipboardList } from 'lucide-react'
+import { Home, Package, LogOut, LogIn, Settings, BarChart2, Tag, MapPin, Boxes, ArrowLeftRight, ClipboardCheck, ClipboardList, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Database } from '@/lib/supabase/database.types'
 
@@ -20,6 +20,7 @@ const adminItems = [
   { href: '/admin',             label: 'Admin',       icon: Settings,  requiresRole: false },
   { href: '/admin/reports',     label: 'Reports',     icon: BarChart2, requiresRole: false },
   { href: '/admin/packages',    label: 'Packages',    icon: Boxes,     requiresRole: false },
+  { href: '/admin/templates',   label: 'Kit Templates', icon: FileText, requiresRole: false },
   { href: '/admin/bulk-checkin', label: 'Bulk Check-In', icon: ClipboardCheck, requiresRole: false },
   { href: '/admin/stock-take',   label: 'Stock Take',    icon: ClipboardList,  requiresRole: false },
   { href: '/admin/categories',  label: 'Categories',  icon: Tag,       requiresRole: false },

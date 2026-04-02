@@ -228,6 +228,43 @@ export interface Database {
         }
         Update: {}
       }
+      kit_templates: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          name: string
+          description?: string | null
+        }
+        Update: {
+          name?: string
+          description?: string | null
+          updated_at?: string
+        }
+      }
+      kit_template_lines: {
+        Row: {
+          id: string
+          template_id: string
+          category_id: string
+          quantity: number
+          notes: string | null
+        }
+        Insert: {
+          template_id: string
+          category_id: string
+          quantity?: number
+          notes?: string | null
+        }
+        Update: {
+          quantity?: number
+          notes?: string | null
+        }
+      }
       equipment_transfers: {
         Row: {
           id: string

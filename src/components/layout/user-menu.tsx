@@ -13,7 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 import { signOut } from '@/actions/auth'
 import { Database } from '@/lib/supabase/database.types'
-import { LogOut, Shield, User, Settings, BarChart2, Boxes, Tag, MapPin, ClipboardCheck, ClipboardList } from 'lucide-react'
+import { LogOut, Shield, User, Settings, BarChart2, Boxes, Tag, MapPin, ClipboardCheck, ClipboardList, FileText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -77,6 +77,9 @@ export function UserMenu({ profile, compact = false }: { profile: Profile; compa
             </DropdownMenuItem>
             <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/packages')}>
               <Boxes size={14} /> Packages
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/templates')}>
+              <FileText size={14} /> Kit Templates
             </DropdownMenuItem>
             <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => router.push('/admin/bulk-checkin')}>
               <ClipboardCheck size={14} /> Bulk Check-In
